@@ -27,8 +27,8 @@ export async function scanReport(
 
       fileElement.elements.forEach(errorElement => {
         const attributes = errorElement.attributes
-        const line = attributes.line
-        const column = attributes.column
+        const line = +attributes.line
+        const column = +attributes.column
         const severity = attributes.severity
         const msg = attributes.message
 
@@ -44,8 +44,8 @@ export async function scanReport(
 
     violations.forEach(violation => {
       const file = violation.file
-      if (isFileInChangeset(git, file)) {
-        if (!(file in files)) {
+      if (!files.includes(file)) {
+        if (isFileInChangeset(git, file)) {
           files.push(file)
         }
       }

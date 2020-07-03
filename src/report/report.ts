@@ -11,9 +11,9 @@ export function reportViolationsForLines(
     const line = violation.line
 
     const diff = fileDiffs.find(element => element.file === file)
+
     if (diff) {
       if (diff.modified_lines.includes(line)) {
-        // bam, report
         messageCallback(violation.message, violation.file, violation.line)
       }
     }
