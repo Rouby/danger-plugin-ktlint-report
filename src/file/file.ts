@@ -12,10 +12,30 @@ export function isFileInChangeset(git: GitDSL | undefined, relativeFilePath: str
     const isAdded = git.created_files.includes(relativeFilePath)
 
     if (isModified || isAdded) {
+      // get changed lines
       return true
     }
   } else {
     return true
   }
   return false
+}
+
+export function getChangedLinesByFile(git: GitDSL, relativeFilePath: string): Promise<number[]> {
+  return git.structuredDiffForFile(relativeFilePath).then(diff => {
+    const lines: number[] = []
+
+    if (diff) {
+      diff.chunks.forEach(chunk => {
+        chunk.changes.forEach(change => {
+          if (change.type === "add") {
+            // is addition
+            lines.push(change.ln)
+          }
+        })
+      })
+    }
+
+    return lines
+  })
 }

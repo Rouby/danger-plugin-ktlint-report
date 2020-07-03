@@ -1,6 +1,10 @@
 import { GitDSL } from "danger"
-import { isFileInChangeset } from "../file/file"
+import { getChangedLinesByFile, isFileInChangeset } from "../file/file"
+import { reportViolationsForLines } from "../report/report"
+
 type MarkdownString = string
+
+const fileDiffs: FileDiff[] = []
 
 /**
  *
@@ -8,12 +12,15 @@ type MarkdownString = string
  * @param report JavaScript object representation of the checkstyle report
  * @param root Root directory to sanitize absolute paths
  */
-export function scanReport(
+export async function scanReport(
   git: GitDSL,
   report: any,
   root: string,
   messageCallback: (msg: MarkdownString, fileName: string, line: number) => void
-): void {
+) {
+  const violations: Violation[] = []
+  const files: string[] = []
+
   if (report.elements && report.elements[0].elements) {
     report.elements[0].elements.forEach(fileElement => {
       const fileName = fileElement.attributes.name.replace(root, "").replace(/^\/+/, "")
@@ -25,10 +32,35 @@ export function scanReport(
         const severity = attributes.severity
         const msg = attributes.message
 
-        if (isFileInChangeset(git, fileName)) {
-          messageCallback(msg, fileName, line)
-        }
+        violations.push({
+          file: fileName,
+          line,
+          column,
+          severity,
+          message: msg,
+        })
       })
     })
+
+    violations.forEach(violation => {
+      const file = violation.file
+      if (isFileInChangeset(git, file)) {
+        if (!(file in files)) {
+          files.push(file)
+        }
+      }
+    })
+
+    // parse each file, wait for all to finish
+    for (const file of files) {
+      const lineDiff = await getChangedLinesByFile(git, file)
+
+      fileDiffs.push({
+        file,
+        modified_lines: lineDiff,
+      })
+    }
+
+    reportViolationsForLines(violations, fileDiffs, messageCallback)
   }
 }
