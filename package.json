@@ -86,9 +86,8 @@
     ]
   },
   "dependencies": {
+    "@types/node": "^14.0.14",
     "glob": "^7.1.6",
-    "ng2-pdf-viewer": "^5.2.3",
-    "pdfjs-dist": "^2.0.943",
     "xml-js": "^1.6.11"
   }
 }

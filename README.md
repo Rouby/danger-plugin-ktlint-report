@@ -6,6 +6,16 @@
 
 > This plugin reads ktlint reports and posts inline comments in pull requests.
 
+The plugin is still under active development and testing.
+
+## Requirements
+
+The plugin does not execute ktlint on any source set. Instead, the plugin will search the file tree for ktlint reports and parse them.
+
+At the moment the plugin is searching using the following file mask: `**/reports/ktlint/*.xml`.
+
+It is limited to XML checkstyle reports.
+
 ## Usage
 
 Install:
